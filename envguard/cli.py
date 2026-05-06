@@ -39,7 +39,22 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
 
 def load_dotenv_file(path: str) -> dict:
-    """Parse a .env file into a dict of key-value pairs."""
+    """Parse a .env file into a dict of key-value pairs.
+
+    Lines that are empty, start with '#' (comments), or lack an '=' separator
+    are silently skipped. Values are stripped of surrounding whitespace and
+    optional surrounding single or double quotes.
+
+    Args:
+        path: Filesystem path to the .env file.
+
+    Returns:
+        A dictionary mapping variable names to their string values.
+
+    Raises:
+        FileNotFoundError: If *path* does not exist.
+        OSError: If the file cannot be read.
+    """
     env: dict = {}
     with open(path, "r", encoding="utf-8") as fh:
         for line in fh:
