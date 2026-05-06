@@ -83,3 +83,13 @@ def test_line_numbers_are_accurate():
     result = lint_env_lines(lines("GOOD=value", "BADLINE", "ALSO_GOOD=1"))
     error = next(i for i in result.issues if i.severity == "error")
     assert error.line_number == 2
+
+
+def test_multiple_issues_same_line():
+    """A line can produce more than one issue (e.g. lowercase key AND empty value)."""
+    result = lint_env_lines(lines("lowercase_key="))
+    line_issues = [i for i in result.issues if i.line_number == 1]
+    severities = {i.severity for i in line_issues}
+    # Expect at least a warning for the key casing and an info for the empty value
+    assert "warning" in severities
+    assert "info" in severities
