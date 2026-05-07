@@ -95,4 +95,21 @@ def test_multiple_sensitive_keys_all_redacted():
     env = {"DB_PASSWORD": "pass", "API_TOKEN": "tok", "HOST": "localhost"}
     result = redact_env(env)
     assert set(result.redacted_keys) == {"DB_PASSWORD", "API_TOKEN"}
+    assert result.values["DB_PASSWORD"] == REDACT_PLACEHOLDER
+    assert result.values["API_TOKEN"] == REDACT_PLACEHOLDER
     assert result.values["HOST"] == "localhost"
+
+
+def test_redact_result_original_count_matches_input():
+    """original_count should equal the number of keys passed in, regardless of redaction."""
+    env = {"DB_PASSWORD": "pass", "API_TOKEN": "tok", "HOST": "localhost"}
+    result = redact_env(env)
+    assert result.original_count == len(env)
+
+
+def test_empty_env_returns_empty_result():
+    """An empty environment dict should produce an empty RedactResult."""
+    result = redact_env({})
+    assert result.redacted_keys == []
+    assert result.values == {}
+    assert result.original_count == 0
