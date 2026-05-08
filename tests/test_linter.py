@@ -93,3 +93,12 @@ def test_multiple_issues_same_line():
     # Expect at least a warning for the key casing and an info for the empty value
     assert "warning" in severities
     assert "info" in severities
+
+
+def test_lint_issue_repr():
+    """LintIssue repr should include severity, line number, and message."""
+    issue = LintIssue(5, "something went wrong", "error")
+    r = repr(issue)
+    assert "error" in r.lower()
+    assert "5" in r
+    assert "something went wrong" in r
