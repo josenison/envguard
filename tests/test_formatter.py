@@ -74,3 +74,19 @@ def test_multiple_changes_recorded():
     result = format_env(text)
     assert result.was_changed
     assert len(result.changes) >= 2
+
+
+def test_empty_value_preserved():
+    """An assignment with no value should remain valid and unchanged."""
+    text = "KEY="
+    result = format_env(text)
+    assert result.lines[0] == "KEY="
+    assert not result.was_changed
+
+
+def test_empty_string_input():
+    """Formatting an empty string should return an empty result without error."""
+    result = format_env("")
+    assert result.lines == [""]
+    assert not result.was_changed
+    assert str(result) == ""
