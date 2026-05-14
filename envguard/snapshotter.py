@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -53,9 +54,24 @@ def save_snapshot(snapshot: Snapshot, path: str) -> None:
 
 
 def load_snapshot(path: str) -> Snapshot:
-    """Load a snapshot from a JSON file."""
+    """Load a snapshot from a JSON file.
+
+    Raises:
+        FileNotFoundError: If the snapshot file does not exist.
+        ValueError: If the file content is not valid JSON or is missing
+            required fields ('timestamp' or 'keys').
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Snapshot file not found: {path}")
     with open(path, "r", encoding="utf-8") as fh:
-        data = json.load(fh)
+        try:
+            data = json.load(fh)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON in snapshot file '{path}': {exc}") from exc
+    if "timestamp" not in data or "keys" not in data:
+        raise ValueError(
+            f"Snapshot file '{path}' is missing required fields ('timestamp', 'keys')."
+        )
     return Snapshot.from_dict(data)
 
 
