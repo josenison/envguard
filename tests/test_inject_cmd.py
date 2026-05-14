@@ -10,6 +10,7 @@ from envguard.commands.inject_cmd import run_inject
 
 
 def _make_args(**kwargs) -> argparse.Namespace:
+    """Create a Namespace with sensible defaults for inject command tests."""
     defaults = {
         "env_file": "/nonexistent/.env",
         "overwrite": False,
@@ -84,3 +85,14 @@ def test_run_inject_cmd_strips_double_dash(tmp_path):
     assert rc == 42
     called_cmd = mock_run.call_args[0][0]
     assert "--" not in called_cmd
+
+
+def test_run_inject_cmd_propagates_nonzero_returncode(tmp_path):
+    """Ensure run_inject returns the subprocess exit code when it is non-zero."""
+    env_file = tmp_path / ".env"
+    env_file.write_text("X=1\n")
+    mock_proc = MagicMock(returncode=2)
+    with patch("envguard.commands.inject_cmd.subprocess.run", return_value=mock_proc):
+        args = _make_args(env_file=str(env_file), cmd=["false"])
+        rc = run_inject(args)
+    assert rc == 2
