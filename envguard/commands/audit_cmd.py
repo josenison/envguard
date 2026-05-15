@@ -20,6 +20,20 @@ def add_audit_subparser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def _parse_env_file(path: Path) -> dict:
+    """Parse a .env file into a dictionary of key-value pairs.
+
+    Skips blank lines and lines beginning with '#' (comments).
+    Lines without an '=' separator are also skipped.
+
+    Args:
+        path: Path to the .env file.
+
+    Returns:
+        A dict mapping environment variable names to their string values.
+
+    Raises:
+        OSError: If the file cannot be read.
+    """
     env = {}
     for line in path.read_text().splitlines():
         stripped = line.strip()
@@ -33,6 +47,20 @@ def _parse_env_file(path: Path) -> dict:
 
 
 def run_audit(args: argparse.Namespace) -> int:
+    """Execute the audit subcommand.
+
+    Parses the specified .env file, runs the auditor, and prints any issues
+    found.  Returns an exit code suitable for passing to ``sys.exit``.
+
+    Args:
+        args: Parsed CLI arguments.  Expected attributes:
+            - ``env_file`` (str): path to the .env file.
+            - ``strict`` (bool): if True, treat warnings as errors.
+
+    Returns:
+        0 if no issues (or only warnings when not in strict mode),
+        1 if errors are present or strict mode is enabled and warnings exist.
+    """
     env_path = Path(args.env_file)
     if not env_path.exists():
         print(f"[ERROR] Env file not found: {env_path}", file=sys.stderr)
