@@ -23,6 +23,11 @@ def add_profile_subparser(subparsers: argparse._SubParsersAction) -> None:  # no
 
 
 def _parse_env_file(path: str) -> Dict[str, str]:
+    """Parse a .env file into a dictionary of key/value pairs.
+
+    Lines that are blank, start with ``#``, or do not contain ``=`` are
+    silently skipped.  Returns an empty dict if the file cannot be opened.
+    """
     pairs: Dict[str, str] = {}
     try:
         with open(path) as fh:
