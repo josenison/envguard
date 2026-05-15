@@ -46,6 +46,23 @@ def _parse_env_file(path: Path) -> dict:
     return env
 
 
+def _print_summary(result) -> None:
+    """Print a summary line showing the count of errors and warnings.
+
+    Args:
+        result: An audit result object with an ``issues`` attribute and
+                ``has_errors``/``has_warnings`` helper methods.
+    """
+    error_count = sum(1 for i in result.issues if i.severity == "error")
+    warning_count = sum(1 for i in result.issues if i.severity == "warning")
+    parts = []
+    if error_count:
+        parts.append(f"{error_count} error(s)")
+    if warning_count:
+        parts.append(f"{warning_count} warning(s)")
+    print(f"Audit complete: {', '.join(parts)} found.")
+
+
 def run_audit(args: argparse.Namespace) -> int:
     """Execute the audit subcommand.
 
@@ -75,6 +92,8 @@ def run_audit(args: argparse.Namespace) -> int:
 
     for issue in result.issues:
         print(str(issue))
+
+    _print_summary(result)
 
     if result.has_errors():
         return 1
