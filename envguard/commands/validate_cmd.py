@@ -35,6 +35,23 @@ def add_validate_subparser(subparsers: argparse._SubParsersAction) -> None:  # n
     parser.set_defaults(func=run_validate)
 
 
+def _parse_env_vars(env_text: str) -> dict[str, str]:
+    """Parse a .env file's text content into a key/value dictionary.
+
+    Lines that are empty, whitespace-only, or begin with '#' are ignored.
+    Only lines containing '=' are treated as variable assignments.
+    """
+    env_vars: dict[str, str] = {}
+    for line in env_text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if "=" in stripped:
+            key, _, value = stripped.partition("=")
+            env_vars[key.strip()] = value.strip()
+    return env_vars
+
+
 def run_validate(args: argparse.Namespace) -> int:
     """Execute the validate subcommand. Returns exit code."""
     env_path = Path(args.env_file)
@@ -51,15 +68,7 @@ def run_validate(args: argparse.Namespace) -> int:
     env_text = env_path.read_text(encoding="utf-8")
     schema = load_schema(schema_path)
 
-    # Parse key=value pairs into a dict for validation
-    env_vars: dict[str, str] = {}
-    for line in env_text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if "=" in stripped:
-            key, _, value = stripped.partition("=")
-            env_vars[key.strip()] = value.strip()
+    env_vars = _parse_env_vars(env_text)
 
     validation_result = validate_env(env_vars, schema)
     lint_result = lint_env(env_text) if not args.no_lint else None
